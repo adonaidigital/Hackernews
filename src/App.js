@@ -194,3 +194,8 @@ onDismiss(id) {
       </button>
   
 export default App;
+export {
+  Button,
+  Search,
+  Table,
+  };
