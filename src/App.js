@@ -22,6 +22,24 @@ const SORTS = {
   COMMENTS: list => sortBy(list, 'num_comments').reverse(),
   POINTS: list => sortBy(list, 'points').reverse(),
   };
+
+  const updateSearchTopStoriesState = (hits, page) => (prevState) => {
+    const { searchKey, results } = prevState;
+      const oldHits = results && results[searchKey]
+      ? results[searchKey].hits
+      : [];
+    const updatedHits = [
+      ...oldHits,
+      ...hits
+      ];
+    return {
+      results: {
+      ...results,
+      [searchKey]: { hits: updatedHits, page }
+    },
+      isLoading: false
+      };
+    };
 class App extends Component {
   _isMounted = false;
   constructor(props) {
@@ -33,8 +51,8 @@ class App extends Component {
     searchTerm: DEFAULT_QUERY,
     error: null,
     isLoading: false,
-    sortKey: 'NONE',
-    isSortReverse: false,
+    // sortKey: 'NONE',
+    // isSortReverse: false,
   };
 
   this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
@@ -58,20 +76,8 @@ needsToSearchTopStories(searchTerm) {
 
 setSearchTopStories(result) {
   const { hits, page } = result;
-  const { searchKey, results } = this.state;
-
-  const oldHits = results && results[searchKey]
-  ? results[searchKey].hits
-  : [];
-  const updatedHits = [
-    ...oldHits,
-    ...hits
-  ];
-  this.setState({ results: {...results,[searchKey]: {hits: updatedHits, page }
-      },
-      isLoading: false
-    });
-  }  
+  this.setState(updateSearchTopStoriesState(hits, page));
+}
 
 fetchSearchTopStories(searchTerm, page = 0) {
   this.setState({ isLoading: true });
@@ -124,8 +130,8 @@ render() {
         searchKey , 
         error,
         isLoading,
-        sortKey,
-        isSortReverse
+        // sortKey,
+        // isSortReverse
         } = this.state;
     const page = (
           results && 
@@ -155,9 +161,9 @@ render() {
           </div>
             :<Table
             list={list}
-            sortKey={sortKey}
-            isSortReverse={isSortReverse}
-            onSort={this.onSort}
+            // sortKey={sortKey}
+            // isSortReverse={isSortReverse}
+            // onSort={this.onSort}
             onDismiss={this.onDismiss}
             />
           }
@@ -198,16 +204,36 @@ render() {
       </button>
     </form>
 
-  const Table = ({ 
-    list, 
-    sortKey, 
-    onSort, 
-    onDismiss, 
-    isSortReverse }) => {
-    const sortedList = SORTS[sortKey](list);
-      const reverseSortedList = isSortReverse
-      ? sortedList.reverse()
-      : sortedList;
+    class Table extends Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          sortKey: 'NONE',
+          isSortReverse: false,
+      };
+      this.onSort = this.onSort.bind(this);
+      }
+      onSort(sortKey) {
+      const isSortReverse = this.state.sortKey === sortKey && !this.state.isSortReverse;
+      this.setState({ sortKey, isSortReverse });
+      }
+
+      render() {
+        const {
+        list,
+        onDismiss
+        } = this.props;
+
+        const {
+          sortKey,
+          isSortReverse,
+          onSort,
+          } = this.state;
+
+        const sortedList = SORTS[sortKey](list);
+        const reverseSortedList = isSortReverse
+        ? sortedList.reverse()
+        : sortedList;
       
 return(
     <div className="table">
@@ -215,7 +241,7 @@ return(
           <span style={ largeColumn }>
             <Sort 
             sortKey={'TITLE'} 
-            onSort={onSort} 
+            onSort={this.onSort} 
             activeSortKey={sortKey}> 
             Title 
             </Sort>
@@ -223,7 +249,7 @@ return(
           <span style={ midColumn }>
             <Sort 
               sortKey={'AUTHOR'} 
-              onSort={onSort} 
+              onSort={this.onSort} 
               activeSortKey={sortKey}> 
             Author 
             </Sort>
@@ -231,7 +257,7 @@ return(
           <span style={ smallColumn }>
             <Sort 
               sortKey={'COMMENTS'} 
-              onSort={onSort} 
+              onSort={this.onSort} 
               activeSortKey={sortKey}> 
             Comments 
             </Sort>
@@ -239,7 +265,7 @@ return(
           <span style={ smallColumn }>
             <Sort 
               sortKey={'POINTS'} 
-              onSort={onSort} 
+              onSort={this.onSort} 
               activeSortKey={sortKey}> 
             Points 
             </Sort>
@@ -273,9 +299,9 @@ return(
     </div>
   )}
 </div>
-  );
+    );
+  }
 }
-
 Table.propTypes = {
   list: PropTypes.arrayOf(
     PropTypes.shape({
