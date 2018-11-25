@@ -1,4 +1,7 @@
 node_modules/
+config/
+scripts/
+
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # dependencies
