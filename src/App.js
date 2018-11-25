@@ -227,7 +227,7 @@ render() {
         const {
           sortKey,
           isSortReverse,
-          onSort,
+          // onSort
           } = this.state;
 
         const sortedList = SORTS[sortKey](list);
